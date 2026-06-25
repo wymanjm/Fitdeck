@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FitDeck</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0e0e0e;
+    --white: #f5f4f0;
+    --lime: #c8f135;
+    --mid: #1c1c1c;
+    --muted: #888;
+    --card-h: 420px;
+  }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 430px;
+    margin: 0 auto;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    padding: 20px 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--lime);
+  }
+  .deck-count {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* CATEGORY FILTER */
+  .categories {
+    padding: 0 16px 16px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .categories::-webkit-scrollbar { display: none; }
+  .cat-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #333;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .cat-btn.active {
+    border-color: var(--lime);
+    color: var(--lime);
+    background: rgba(200, 241, 53, 0.08);
+  }
+
+  /* CARD AREA */
+  .card-area {
+    flex: 1;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card-wrapper {
+    width: 100%;
+    perspective: 1000px;
+    height: var(--card-h);
+    cursor: pointer;
+    position: relative;
+  }
+
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card-inner.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 24px;
+  }
+
+  .card-front {
+    background: var(--mid);
+    border: 1.5px solid #2a2a2a;
+    justify-content: space-between;
+  }
+  .card-back {
+    background: var(--lime);
+    color: var(--black);
+    transform: rotateY(180deg);
+    justify-content: space-between;
+  }
+
+  .card-category {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--lime);
+  }
+  .card-back .card-category {
+    color: rgba(0,0,0,0.4);
+  }
+
+  .card-exercise {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 58px;
+    line-height: 0.95;
+    letter-spacing: 1px;
+    color: var(--white);
+  }
+  .card-back .card-exercise {
+    color: var(--black);
+    font-size: 44px;
+  }
+
+  .card-reps {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 86px;
+    line-height: 1;
+    color: rgba(200, 241, 53, 0.15);
+    text-align: right;
+    letter-spacing: -2px;
+  }
+  .card-back .card-reps {
+    color: rgba(0,0,0,0.1);
+  }
+
+  .card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .flip-hint {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .card-back .flip-hint {
+    color: rgba(0,0,0,0.4);
+  }
+
+  .card-description {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--black);
+    margin: 4px 0 16px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .muscles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .muscle-tag {
+    background: rgba(0,0,0,0.15);
+    color: var(--black);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* TIMER */
+  .timer-area {
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .timer-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    text-align: center;
+    letter-spacing: 4px;
+    line-height: 1;
+    color: var(--white);
+    transition: color 0.3s;
+  }
+  .timer-display.running { color: var(--lime); }
+  .timer-display.done { color: #ff4d4d; }
+
+  .timer-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    justify-content: center;
+  }
+
+  .timer-btn {
+    flex: 1;
+    max-width: 140px;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .btn-start {
+    background: var(--lime);
+    color: var(--black);
+  }
+  .btn-reset {
+    background: #2a2a2a;
+    color: var(--muted);
+  }
+  .timer-btn:active { transform: scale(0.97); }
+
+  /* DRAW BUTTON */
+  .draw-area {
+    padding: 20px 20px 36px;
+    width: 100%;
+  }
+  .draw-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    border-radius: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .draw-btn:active {
+    transform: scale(0.98);
+    background: var(--lime);
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty h3 { font-size: 18px; margin-bottom: 8px; color: var(--white); }
+
+  /* PROGRESS */
+  .progress-bar {
+    width: 100%;
+    height: 3px;
+    background: #1c1c1c;
+    border-radius: 2px;
+    margin: 0 0 4px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--lime);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">FitDeck</div>
+  <div class="deck-count" id="deck-count">52 CARDS</div>
+</header>
+
+<div class="categories" id="categories"></div>
+
+<div class="card-area">
+  <div style="width:100%; padding: 0 0 4px;">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-label" id="progress-label">0 / 52 drawn</div>
+  </div>
+
+  <div class="card-wrapper" id="card-wrapper" onclick="flipCard()">
+    <div class="card-inner" id="card-inner">
+      <div class="card-face card-front" id="card-front">
+        <div class="card-category" id="front-category">STRENGTH</div>
+        <div>
+          <div class="card-exercise" id="front-exercise">Push<br>Up</div>
+        </div>
+        <div class="card-bottom">
+          <div class="flip-hint">Tap to see how →</div>
+          <div class="card-reps" id="front-reps">15</div>
+        </div>
+      </div>
+      <div class="card-face card-back" id="card-back">
+        <div class="card-category" id="back-category">STRENGTH</div>
+        <div class="card-exercise" id="back-exercise">Push Up</div>
+        <div class="card-description" id="back-description">
+          Start in a high plank. Lower your chest to the floor, keeping elbows at 45°. Push back up to full arm extension.
+        </div>
+        <div class="muscles" id="back-muscles"></div>
+        <div class="card-bottom">
+          <div class="flip-hint">← Tap to flip back</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;" id="back-reps">15 REPS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="timer-area">
+    <div class="timer-display" id="timer-display">00:30</div>
+    <div class="timer-controls">
+      <button class="timer-btn btn-start" id="timer-btn" onclick="toggleTimer()">START</button>
+      <button class="timer-btn btn-reset" onclick="resetTimer()">RESET</button>
+    </div>
+  </div>
+</div>
+
+<div class="draw-area">
+  <button class="draw-btn" onclick="drawCard()">DRAW CARD</button>
+</div>
+
+<script>
+const CARDS = [
+  { name: "Push Up", category: "Strength", reps: "15 reps", muscles: ["Chest", "Triceps", "Shoulders"], description: "Start in a high plank. Lower your chest to the floor keeping elbows at 45°. Push back up to full arm extension.", timer: 30 },
+  { name: "Squat", category: "Strength", reps: "20 reps", muscles: ["Quads", "Glutes", "Hamstrings"], description: "Feet shoulder-width apart, toes slightly out. Sit back and down until thighs are parallel to the floor. Drive through your heels to stand.", timer: 40 },
+  { name: "Plank", category: "Core", reps: "45 sec", muscles: ["Core", "Shoulders", "Glutes"], description: "Forearms on the floor, elbows under shoulders. Keep hips level with your body in a straight line from head to heels.", timer: 45 },
+  { name: "Burpee", category: "Cardio", reps: "10 reps", muscles: ["Full Body", "Cardio"], description: "Drop to a push-up, do one rep, jump feet to hands, then explode into a jump with arms overhead.", timer: 40 },
+  { name: "Mountain Climber", category: "Cardio", reps: "30 sec", muscles: ["Core", "Hip Flexors", "Cardio"], description: "High plank position. Drive knees to chest alternately in a running motion while keeping hips low and level.", timer: 30 },
+  { name: "Lunge", category: "Strength", reps: "12 each", muscles: ["Quads", "Glutes", "Balance"], description: "Step forward and lower your back knee toward the floor. Front knee stays over your ankle. Push back to start and alternate legs.", timer: 40 },
+  { name: "Glute Bridge", category: "Strength", reps: "15 reps", muscles: ["Glutes", "Hamstrings", "Lower Back"], description: "Lie on your back, knees bent, feet flat. Drive hips up until your body forms a straight line from knees to shoulders. Squeeze at the top.", timer: 35 },
+  { name: "High Knees", category: "Cardio", reps: "30 sec", muscles: ["Hip Flexors", "Cardio", "Core"], description: "Run in place driving knees up to hip height with each step. Pump arms in rhythm. Keep a fast, light pace.", timer: 30 },
+  { name: "Tricep Dip", category: "Strength", reps: "12 reps", muscles: ["Triceps", "Shoulders", "Chest"], description: "Use a chair or bench. Lower yourself until elbows are at 90°, keeping elbows pointing back. Push through your palms to full extension.", timer: 30 },
+  { name: "Dead Bug", category: "Core", reps: "10 each", muscles: ["Core", "Lower Back", "Stability"], description: "Lie on your back, arms up, knees at 90°. Lower opposite arm and leg toward the floor while pressing your lower back down. Return and switch.", timer: 40 },
+  { name: "Jump Squat", category: "Cardio", reps: "12 reps", muscles: ["Quads", "Glutes", "Cardio"], description: "Start in a squat. Explode upward into a jump, fully extending your body. Land softly back into the squat position.", timer: 30 },
+  { name: "Superman", category: "Core", reps: "12 reps", muscles: ["Lower Back", "Glutes", "Shoulders"], description: "Lie face down, arms extended overhead. Lift arms, chest, and legs off the floor simultaneously. Hold for 2 seconds then lower.", timer: 30 },
+  { name: "Side Plank", category: "Core", reps: "30 sec each", muscles: ["Obliques", "Core", "Shoulders"], description: "Lie on your side, supported on one forearm. Stack feet or stagger them. Lift hips to form a straight line. Hold then switch sides.", timer: 60 },
+  { name: "Box Jump", category: "Cardio", reps: "8 reps", muscles: ["Quads", "Glutes", "Cardio"], description: "Stand facing a sturdy box or step. Bend knees, swing arms, and explode onto the box. Land softly with knees bent. Step down carefully.", timer: 30 },
+  { name: "Pike Push Up", category: "Strength", reps: "10 reps", muscles: ["Shoulders", "Triceps", "Core"], description: "Start in downward dog position. Bend elbows to lower your head toward the floor between your hands. Push back up.", timer: 30 },
+  { name: "Bear Crawl", category: "Cardio", reps: "20 sec", muscles: ["Full Body", "Core", "Coordination"], description: "On hands and feet with knees hovering an inch off the floor. Move forward alternating opposite hand and foot. Keep hips level.", timer: 20 },
+  { name: "Flutter Kick", category: "Core", reps: "30 sec", muscles: ["Lower Abs", "Hip Flexors", "Quads"], description: "Lie on your back, hands under glutes. Raise legs 6 inches and alternate kicking them up and down in small rapid motions.", timer: 30 },
+  { name: "Reverse Lunge", category: "Strength", reps: "12 each", muscles: ["Quads", "Glutes", "Balance"], description: "Step backward with one leg and lower that knee toward the floor. Front knee stays vertical over ankle. Push through front heel to stand.", timer: 40 },
+  { name: "Jumping Jack", category: "Warm-Up", reps: "30 reps", muscles: ["Full Body", "Cardio"], description: "Start feet together, arms at sides. Jump feet out while raising arms overhead. Jump back to start and repeat in one fluid motion.", timer: 30 },
+  { name: "Inchworm", category: "Warm-Up", reps: "8 reps", muscles: ["Hamstrings", "Core", "Shoulders"], description: "Stand and bend to place hands on the floor. Walk hands out to a plank, hold a moment, then walk feet to hands. Stand and repeat.", timer: 40 },
+  { name: "World's Greatest Stretch", category: "Warm-Up", reps: "5 each", muscles: ["Hip Flexors", "Thoracic", "Hamstrings"], description: "From a lunge, place same-side hand inside front foot. Rotate and reach opposite hand to the sky. Hold, then switch.", timer: 50 },
+  { name: "Hip Circle", category: "Warm-Up", reps: "10 each", muscles: ["Hips", "Glutes", "Mobility"], description: "Stand on one leg. Draw large circles with the raised knee — forward 10, backward 10. Keep core tight and standing leg soft.", timer: 30 },
+  { name: "Donkey Kick", category: "Strength", reps: "15 each", muscles: ["Glutes", "Hamstrings", "Core"], description: "On all fours, keep one knee bent at 90° and drive that foot up toward the ceiling. Squeeze glutes at the top. Lower and repeat.", timer: 35 },
+  { name: "Fire Hydrant", category: "Strength", reps: "15 each", muscles: ["Glutes", "Hip Abductors", "Core"], description: "On all fours, lift one knee out to the side keeping it at 90°. Raise until hip height. Lower controlled and repeat.", timer: 35 },
+  { name: "Wall Sit", category: "Strength", reps: "45 sec", muscles: ["Quads", "Glutes", "Calves"], description: "Back flat against a wall, slide down until thighs are parallel to the floor. Hold the position. Feet flat, knees directly over ankles.", timer: 45 },
+  { name: "Calf Raise", category: "Strength", reps: "20 reps", muscles: ["Calves", "Ankles", "Balance"], description: "Stand with feet hip-width apart. Rise up onto the balls of your feet as high as possible. Lower slowly with control. Add single-leg for challenge.", timer: 30 },
+  { name: "Shoulder Tap", category: "Core", reps: "20 reps", muscles: ["Core", "Shoulders", "Stability"], description: "High plank position. Tap one hand to the opposite shoulder while keeping hips as still as possible. Alternate sides.", timer: 30 },
+  { name: "Leg Raise", category: "Core", reps: "15 reps", muscles: ["Lower Abs", "Hip Flexors"], description: "Lie flat on your back, hands under glutes. Keeping legs straight, raise them to 90°, then lower slowly without touching the floor.", timer: 35 },
+  { name: "Russian Twist", category: "Core", reps: "20 reps", muscles: ["Obliques", "Core", "Balance"], description: "Sit with knees bent, feet lifted slightly. Lean back to 45°. Rotate your torso side to side, touching hands to the floor each time.", timer: 35 },
+  { name: "Star Jump", category: "Cardio", reps: "15 reps", muscles: ["Full Body", "Cardio"], description: "Squat down, then explode up spreading arms and legs wide like a star at the peak of the jump. Land softly and immediately squat again.", timer: 30 },
+  { name: "Sprint in Place", category: "Cardio", reps: "20 sec", muscles: ["Cardio", "Hip Flexors", "Calves"], description: "Pump arms hard and drive knees as high as possible while running in place at maximum speed. Go all out for the duration.", timer: 20 },
+  { name: "Cat-Cow", category: "Warm-Up", reps: "10 cycles", muscles: ["Spine", "Core", "Mobility"], description: "On all fours. Inhale, drop belly, lift head and tailbone (cow). Exhale, round spine toward ceiling, tuck chin and pelvis (cat). Flow between.", timer: 40 },
+  { name: "Hip Hinge", category: "Warm-Up", reps: "12 reps", muscles: ["Hamstrings", "Glutes", "Lower Back"], description: "Stand tall, soft knees. Push hips back as you lower your torso toward the floor with a flat back. Feel the hamstring stretch, then drive hips forward.", timer: 30 },
+  { name: "Lateral Lunge", category: "Strength", reps: "10 each", muscles: ["Glutes", "Adductors", "Quads"], description: "Step wide to one side and sit into that hip, keeping the other leg straight. Push through the bent leg heel to return. Alternate sides.", timer: 40 },
+  { name: "T Push Up", category: "Strength", reps: "8 each", muscles: ["Chest", "Core", "Shoulders"], description: "Do a push-up. At the top, rotate into a side plank raising one arm to the ceiling to form a T-shape. Return and alternate sides.", timer: 40 },
+];
+
+const CATEGORIES = ["All", "Strength", "Cardio", "Core", "Warm-Up"];
+
+let currentCard = null;
+let isFlipped = false;
+let activeCategory = "All";
+let drawn = new Set();
+let timerInterval = null;
+let timerRunning = false;
+let timerSeconds = 30;
+let timerDefault = 30;
+
+function getFilteredCards() {
+  if (activeCategory === "All") return CARDS;
+  return CARDS.filter(c => c.category === activeCategory);
+}
+
+function renderCategories() {
+  const el = document.getElementById('categories');
+  el.innerHTML = CATEGORIES.map(cat =>
+    `<button class="cat-btn ${cat === activeCategory ? 'active' : ''}" onclick="setCategory('${cat}')">${cat}</button>`
+  ).join('');
+}
+
+function setCategory(cat) {
+  activeCategory = cat;
+  drawn.clear();
+  renderCategories();
+  updateDeckCount();
+  updateProgress();
+  drawCard();
+}
+
+function updateDeckCount() {
+  const count = getFilteredCards().length;
+  document.getElementById('deck-count').textContent = count + ' CARDS';
+}
+
+function updateProgress() {
+  const total = getFilteredCards().length;
+  const done = drawn.size;
+  document.getElementById('progress-fill').style.width = (done / total * 100) + '%';
+  document.getElementById('progress-label').textContent = done + ' / ' + total + ' drawn';
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('card-inner').classList.toggle('flipped', isFlipped);
+}
+
+function drawCard() {
+  const pool = getFilteredCards();
+  let available = pool.filter((_, i) => !drawn.has(i + activeCategory));
+
+  if (available.length === 0) {
+    drawn.clear();
+    available = pool;
+  }
+
+  const card = available[Math.floor(Math.random() * available.length)];
+  const key = pool.indexOf(card) + activeCategory;
+  drawn.add(key);
+
+  // Reset flip
+  isFlipped = false;
+  const inner = document.getElementById('card-inner');
+  inner.style.transition = 'none';
+  inner.classList.remove('flipped');
+  setTimeout(() => { inner.style.transition = ''; }, 20);
+
+  currentCard = card;
+
+  document.getElementById('front-category').textContent = card.category.toUpperCase();
+  const nameParts = card.name.split(' ');
+  const displayName = nameParts.length > 1
+    ? nameParts.slice(0, -1).join(' ') + '<br>' + nameParts[nameParts.length - 1]
+    : card.name;
+  document.getElementById('front-exercise').innerHTML = displayName;
+  document.getElementById('front-reps').textContent = card.reps.replace(/\D+/g, '') || '—';
+  document.getElementById('back-category').textContent = card.category.toUpperCase();
+  document.getElementById('back-exercise').textContent = card.name;
+  document.getElementById('back-description').textContent = card.description;
+  document.getElementById('back-reps').textContent = card.reps.toUpperCase();
+
+  const musclesEl = document.getElementById('back-muscles');
+  musclesEl.innerHTML = card.muscles.map(m => `<span class="muscle-tag">${m}</span>`).join('');
+
+  // Reset timer to card default
+  resetTimer();
+  timerDefault = card.timer;
+  timerSeconds = timerDefault;
+  updateTimerDisplay();
+  updateProgress();
+}
+
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    document.getElementById('timer-btn').textContent = 'RESUME';
+    document.getElementById('timer-display').classList.remove('running');
+  } else {
+    if (timerSeconds === 0) {
+      timerSeconds = timerDefault;
+      updateTimerDisplay();
+    }
+    timerRunning = true;
+    document.getElementById('timer-btn').textContent = 'PAUSE';
+    document.getElementById('timer-display').classList.add('running');
+    document.getElementById('timer-display').classList.remove('done');
+    timerInterval = setInterval(() => {
+      timerSeconds--;
+      updateTimerDisplay();
+      if (timerSeconds <= 0) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        document.getElementById('timer-btn').textContent = 'START';
+        document.getElementById('timer-display').classList.remove('running');
+        document.getElementById('timer-display').classList.add('done');
+      }
+    }, 1000);
+  }
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = currentCard ? currentCard.timer : 30;
+  timerDefault = timerSeconds;
+  document.getElementById('timer-btn').textContent = 'START';
+  document.getElementById('timer-display').classList.remove('running', 'done');
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+  const s = (timerSeconds % 60).toString().padStart(2, '0');
+  document.getElementById('timer-display').textContent = m + ':' + s;
+}
+
+// Init
+renderCategories();
+updateDeckCount();
+drawCard();
+</script>
+</body>
+</html>
